@@ -10,7 +10,7 @@ module.exports = function (ctx) {
   return {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
-    boot: ['i18n', 'axios', 'vue-navigation', 'electron-store'],
+    boot: ['i18n', 'axios', 'vue-navigation', 'electron-store', 'vue-rx'],
 
     css: ['app.styl'],
 
@@ -64,17 +64,28 @@ module.exports = function (ctx) {
         'QSeparator',
         'QChip',
         'QTooltip',
+        'QBar',
+        'QSpace',
+        // table
+        'QTable',
+        'QTh',
+        'QTr',
+        'QTd',
+        'QExpansionItem',
+        'QPopupEdit',
+        'QDialog',
+        'QCardActions',
       ],
 
-      directives: ['Ripple'],
+      directives: ['Ripple', 'ClosePopup'],
 
       // Quasar plugins
       plugins: ['Notify', 'Loading', 'LoadingBar', 'Dialog'],
       config: {
         loadingBar: {
           color: 'purple',
-          size: '10px',
-          position: 'top',
+          size: '5px',
+          position: 'bottom',
           skipHijack: true,
         },
       },
@@ -162,7 +173,7 @@ module.exports = function (ctx) {
     },
 
     electron: {
-      bundler: 'packager', // 'builder' or 'packager'
+      bundler: 'builder', // 'builder' or 'packager'
 
       extendWebpack(cfg) {
         // do something with Electron main process Webpack cfg
@@ -191,7 +202,25 @@ module.exports = function (ctx) {
 
       builder: {
         // https://www.electron.build/configuration/configuration
-        // appId: 'h-player'
+        appId: 'com.electron.h-player',
+        mac: {
+          category: 'public.app-category.video',
+          target: 'dmg',
+        },
+        win: {
+          target: [
+            {
+              target: 'zip',
+              arch: [
+                'x64',
+                'ia32',
+              ],
+            },
+          ],
+        },
+        linux: {
+          target: 'AppImage',
+        },
       },
     },
   };

@@ -2,43 +2,28 @@
   <q-layout view="hHh Lpr fFf">
     <!-- (Optional) The Header -->
     <q-header elevated>
-      <q-toolbar>
-        <q-toolbar-title>
-          <q-avatar
-            square
-            size="24px"
-            color="orange"
-          >H</q-avatar>
-        </q-toolbar-title>
-      </q-toolbar>
+      <title-bar @config="configClick"></title-bar>
     </q-header>
     <!-- (Optional) The Footer -->
     <q-footer>
-      <q-toolbar>
-        <q-toolbar-title>
-          <q-avatar
-            square
-            size="24px"
-            color="orange"
-          >H</q-avatar>
-        </q-toolbar-title>
-      </q-toolbar>
+      <footer-content></footer-content>
     </q-footer>
     <q-page-container>
-      <q-page>
-        <div class="flex flex-center import">
+      <q-page class="flex">
+        <div style="flex: auto" class="flex justify-center items-center">
           <q-btn
             color="primary"
             label="暂无视频源，点击选择文件导入"
             @click="openDialog"
           />
+          <span class="q-pa-sm">或前往</span>
           <q-btn
-            v-if="canclable"
-            class="cancl"
-            color="red"
-            label="取消"
-            @click="$router.push('/')"
+            color="primary"
+            icon="settings"
+            label="设置"
+            @click="configClick"
           />
+          <span class="q-pa-sm">页面手动添加</span>
         </div>
       </q-page>
     </q-page-container>
@@ -46,50 +31,42 @@
 </template>
 
 <script>
+import footerContent from 'components/footerContent';
+import titleBar from 'components/titleBar';
 import { mapMutations, mapState } from 'vuex';
 import fs from 'fs-extra';
 
-const { dialog } = require('electron').remote;
-
 export default {
   name: 'Import',
-  data() {
-    return {
-      leftDrawer: true,
-    };
+  components: {
+    titleBar,
+    footerContent,
   },
   computed: {
     ...mapState({
       siteList: state => state.site.siteList,
     }),
-    canclable() {
-      return this.$route.query.canclable;
-    },
   },
   methods: {
     ...mapMutations(['setSiteList']),
     async openDialog() {
-      const dialogResult = dialog.showOpenDialog({
+      const { dialog } = this.$q.electron.remote;
+      const dialogResult = await dialog.showOpenDialog({
         properties: ['openFile'],
         filters: [{ name: 'JSON', extensions: ['json'] }],
       });
-      if (dialogResult) {
-        const importedFile = await fs.readJSON(dialogResult[0]);
-        this.$electronStore.set('siteList', importedFile);
+      if (!dialogResult.canceled && dialogResult.filePaths) {
+        const importedFile = await fs.readJSON(dialogResult.filePaths[0]);
         this.setSiteList(importedFile);
         this.$router.push('/');
       }
+    },
+    configClick() {
+      this.$router.push('/config');
     },
   },
 };
 </script>
 
 <style lang="stylus">
-.import {
-  height: calc(100vh - 100px);
-}
-
-.cancl {
-  margin-left: 20px;
-}
 </style>
